@@ -1,3 +1,5 @@
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -6,6 +8,7 @@ import org.jsoup.select.Elements;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
@@ -37,7 +40,7 @@ public class Extractor {
                         if (links.add(URL)) { //dodaj URL
                             System.out.println("dodato:" + URL);
                         }
-                        getPageLinks(page.attr("abs:href")); // pozivam fju rekurzivno za svaki link na koji naidjem
+                        getPageLinks(page.attr("href")); // pozivam fju rekurzivno za svaki link na koji naidjem
                     }
                 }
             } catch (IOException e) {
@@ -77,19 +80,22 @@ public class Extractor {
 
     public void writeToFile(String filename) {
         FileWriter writer;
+        JSONObject obj = new JSONObject();
         try {
             writer = new FileWriter(filename);
+            writer.write("[");
+            int i=0;
             for (List<String> a : articles) {
-                try {
-                    String temp = "- Title: " + a.get(0) + " (link: " + a.get(1) + ")\n";
-                    //TODO url clana (a.get(1))
-                    System.out.println(temp);
-
-                    writer.write(temp);
-                } catch (IOException e) {
-                    System.err.println(e.getMessage());
+                i++;
+                obj.put("Title", a.get(0));
+                writer.write(obj.toString());
+                if(i < articles.size() ) {
+                    writer.write(", ");
                 }
             }
+            writer.write("]");
+
+            writer.flush();
             writer.close();
         } catch (IOException e) {
             System.err.println(e.getMessage());
